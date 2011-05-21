@@ -1,4 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Bubbles Gameplay Prototype</title>
+<style type="text/css">
+body {
+  background-color: #000;
+  color: #444;
+  font-family: Helvetica, Arial, sans-serif;
+}
+h1 {
+  font-size: 50px;
+  text-shadow: -1px -1px 0 #777;
+  margin: 15px 0;
+}
+a {
+  color: #333;
+  text-shadow: -1px -1px 0 #555;
+  text-decoration: none;
+}
+a:hover {
+  color: #555;
+  text-shadow: -1px -1px 0 #777;
+  text-decoration: none;
+}
+</style>
+</head>
 <body onload="init();">
+<h1>Bubbles Gameplay Prototype</h1>
 <canvas id="canvas" width="800" height="600"></canvas>
 <script type="text/javascript">
 // from: http://stackoverflow.com/questions/5085689/tracking-mouse-position-in-canvas
@@ -190,5 +218,7 @@ function draw() {
     particles[i].draw(ctx);
   }
 }
-
 </script>
+</body>
+<p>Fork me on <a href="https://github.com/vlaube-de">GitHub</a>.</p>
+</html>
