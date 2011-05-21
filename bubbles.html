@@ -3,72 +3,78 @@
 <script type="text/javascript">
 
 function Particle(x, y, size, vx, vy) {
-  var _x = (x!=undefined) ? x : 0;
-  var _y = (y!=undefined) ? y : 0;
-  var _size = (size!=undefined) ? size : 0;
-  var _vx = (vx!=undefined) ? vx : 0;
-  var _vy = (vy!=undefined) ? vy : 0;
+  this.x = x;
+  this.y = y;
+  this.vx = vx;
+  this.vy = vy;
+  this.size = size;
   
-  this.getPosition = function () {
-    return [_x, _y];
-  }
-  this.getSpeed = function () {
-    return [_vx, _vy];
-  }
-  this.getSize = function () {
-    return _size;
-  }
-  this.setPosition = function (x,y) {
-    _x = x;
-    _y = y;
-  }
-  this.setSpeed = function (vx,vy) {
-    _vx = vx;
-    _vy = vy;
-  }
-  this.setSize = function (size) {
-    _size = size;
-  }
-  this.update = function () {
-    _x += _vx;
-    _y += _vy;
+  this.update = function() {
+    this.x += this.vx;
+    this.y += this.vy;
     
     // wall collisions
-    if(_x < _size) {
-      _x = _size;
-      _vx = -_vx;
+    if(this.x < this.size) {
+      this.x = this.size;
+      this.vx = -this.vx;
     }
-    if(_y < _size) {
-      _y = _size;
-      _vy = -_vy;
+    if(this.y < this.size) {
+      this.y = this.size;
+      this.vy = -this.vy;
     }
-    if(_x > canvas.width-_size) {
-      _x = canvas.width-_size;
-      _vx = -_vx;
+    if(this.x > canvas.width-this.size) {
+      this.x = canvas.width-this.size;
+      this.vx = -this.vx;
     }
-    if(_y > canvas.height-_size) {
-      _y = canvas.height-_size;
-      _vy = -_vy;
+    if(this.y > canvas.height-this.size) {
+      this.y = canvas.height-this.size;
+      this.vy = -this.vy;
     }
   }
-  this.draw = function (ctx) {
-    if(_size<=0)
+  this.collide = function(other) {
+    var r1 = this.size;
+    var r2 = other.size;
+    
+    if(r1<=0 || r2<=0) {
+      return false;
+    }
+    
+    var dx = other.x-this.x;
+    var dy = other.y-this.y;
+    var sqdist = (dx*dx) + (dy*dy);
+    
+    if(sqdist < (r1+r2)*(r1+r2)) {
+      // collision occured
+      var dist = Math.sqrt(sqdist);
+      var eatAmount = 0.5*r1/dist;
+      
+      if(r1>r2) {
+        this.size = r1+eatAmount;
+        other.size = dist-r1-eatAmount;
+      } else {
+        other.size = r2+eatAmount;
+        this.size = dist-r2-eatAmount;
+      }
+    }
+  }
+  this.draw = function(ctx) {
+    if(this.size <= 0)
       return;
+    
     ctx.beginPath();
-    ctx.arc(_x, _y, _size, 0, Math.PI*2, false);
+    ctx.fillStyle = this.style;
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2, false);
     ctx.fill();
   }
 }
 
-//var player;
+var playerIndex = 0;
 var particles = new Array();
 var canvas;
 
 function init() {
   canvas = document.getElementById('canvas');
   
-  //player = new Particle(50,50,20,0,0);
-
   for(var i=0; i<100; i++) {
     var x = Math.random()*canvas.width;
     var y = Math.random()*canvas.height;
@@ -78,106 +84,65 @@ function init() {
     particles.push(new Particle(x,y,size,vx,vy));
   }
   
-  
-  setInterval(draw,30);
+  setInterval(draw, 30);
   window.addEventListener('keydown', keyPressed, true);
 }
 
-
 function keyPressed(e) {
-  var player = particles[0];
-
-  var currentSpeed = player.getSpeed();
-  var currentSize = player.getSize();
+  var player = particles[playerIndex];
+  
   var speedChange = 0.3;
   var sizeCost = 0.3;
   
   switch(e.keyCode) {
-    case 38: // up
-      currentSpeed[1] -= speedChange;
-      currentSize-=sizeCost;
+    case KeyEvent.DOM_VK_UP:
+      player.vy   -= speedChange;
+      player.size -= sizeCost;
       break;
-    case 40: // down
-      currentSpeed[1] += speedChange;
-      currentSize-=sizeCost;
+    case KeyEvent.DOM_VK_DOWN:
+      player.vy   += speedChange;
+      player.size -= sizeCost;
       break;
-    case 37: // left
-      currentSpeed[0] -= speedChange;
-      currentSize-=sizeCost;
+    case KeyEvent.DOM_VK_LEFT:
+      player.vx   -= speedChange;
+      player.size -= sizeCost;
       break;
-    case 39: // right
-      currentSpeed[0] += speedChange;
-      currentSize-=sizeCost;
+    case KeyEvent.DOM_VK_RIGHT:
+      player.vx   += speedChange;
+      player.size -= sizeCost;
       break;
     default:
       return true;
   }
-  player.setSpeed(currentSpeed[0], currentSpeed[1]);
-  player.setSize(currentSize);
   
   e.preventDefault();
   
   return true;
 }
 
-function getSqDist(p1, p2) {
-  //return Math.sqrt(
-  return (
-    (p2[0]-p1[0])*(p2[0]-p1[0])+
-    (p2[1]-p1[1])*(p2[1]-p1[1])    
-  );
-}
-
 function draw() {
-  //player.update();
-  
-  for(var i=0; i<particles.length; i++) {
-    particles[i].update();
-  }
-  
-  // check collisions
-  for(var i=0; i<particles.length; i++) {
-    for(var j=i+1; j<particles.length; j++) {
-      var p1 = particles[i];
-      var p2 = particles[j];
-      var size1 = p1.getSize();
-      var size2 = p2.getSize();
-      if(size1<=0 || size2<=0)
-        continue;
-      var sqdist = getSqDist(p1.getPosition(), p2.getPosition());
-      if(sqdist < (size1+size2)*(size1+size2)) { // collision occured
-        var dist = Math.sqrt(sqdist);
-        var eatAmount = 0.5*size1/dist;
-        if(size1>size2) {
-          p1.setSize(size1+eatAmount);
-          p2.setSize(dist-size1-eatAmount);
-        } else {
-          p2.setSize(size2+eatAmount);
-          p1.setSize(dist-size2-eatAmount);
-        }
-      }
-    }
-  }
-  
   var ctx = canvas.getContext('2d');
   ctx.fillStyle = 'rgb(180,180,180)';
   ctx.fillRect(0, 0, 800, 600);
-
-  //ctx.fillStyle = 'rgb(130,130,130)';
-  
-  //player.draw(ctx);
-  
-  ctx.fillStyle = 'rgb(100,100,100)';
   
   for(var i=0; i<particles.length; i++) {
-    var isEvil = particles[0].getSize()-particles[i].getSize()<0;
-    if(isEvil)
-      ctx.fillStyle = 'red';
-    else
-      ctx.fillStyle = 'green';
-    if(i==0)
-      ctx.fillStyle = 'blue'; //player
+    particles[i].update();
     
+    // collide with all other particless
+    for(var j=i+1; j<particles.length; j++) {
+      particles[i].collide(particles[j]);
+    }
+    
+    // set style
+    var isBiggerThanPlayer = particles[playerIndex].size-particles[i].size<0;
+    if(isBiggerThanPlayer) {
+      particles[i].style = "red";
+    } else {
+      particles[i].style = "green";
+    }
+    if(i == playerIndex) {
+      particles[i].style = "blue";
+    }
     particles[i].draw(ctx);
   }
 }
