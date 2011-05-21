@@ -1,13 +1,25 @@
 <body onload="init();">
 <canvas id="canvas" width="800" height="600"></canvas>
 <script type="text/javascript">
+// from: http://stackoverflow.com/questions/5085689/tracking-mouse-position-in-canvas
+function findPos(obj) {
+  var curleft = curtop = 0;
+  if (obj.offsetParent) {
+    do {
+      curleft += obj.offsetLeft;
+      curtop += obj.offsetTop;
+    } while (obj = obj.offsetParent);
+    return { x: curleft, y: curtop };
+  }
+}
 
-function Particle(x, y, size, vx, vy) {
+function Particle(x, y, size, vx, vy, style) {
   this.x = x;
   this.y = y;
   this.vx = vx;
   this.vy = vy;
   this.size = size;
+  this.style = style;
   
   this.update = function() {
     this.x += this.vx;
@@ -31,7 +43,7 @@ function Particle(x, y, size, vx, vy) {
       this.vy = -this.vy;
     }
   }
-  this.collide = function(other) {
+  this.collides = function(other) {
     var r1 = this.size;
     var r2 = other.size;
     
@@ -44,33 +56,27 @@ function Particle(x, y, size, vx, vy) {
     var sqdist = (dx*dx) + (dy*dy);
     
     if(sqdist < (r1+r2)*(r1+r2)) {
-      // collision occured
-      var dist = Math.sqrt(sqdist);
-      var eatAmount = 0.5*r1/dist;
-      
-      if(r1>r2) {
-        this.size = r1+eatAmount;
-        other.size = dist-r1-eatAmount;
-      } else {
-        other.size = r2+eatAmount;
-        this.size = dist-r2-eatAmount;
-      }
+      return true;
     }
   }
   this.draw = function(ctx) {
     if(this.size <= 0)
       return;
     
-    ctx.beginPath();
-    ctx.fillStyle = this.style;
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2, false);
-    ctx.fill();
+    ctx.drawImage(
+      images[this.style],
+      this.x-this.size,
+      this.y-this.size,
+      this.size*2,
+      this.size*2);
   }
 }
 
 var playerIndex = 0;
 var particles = new Array();
 var canvas;
+var imageURLs = ["red.png", "green.png", "blue.png"];
+var images = new Array();
 
 function init() {
   canvas = document.getElementById('canvas');
@@ -84,8 +90,32 @@ function init() {
     particles.push(new Particle(x,y,size,vx,vy));
   }
   
-  setInterval(draw, 30);
-  window.addEventListener('keydown', keyPressed, true);
+  for(var i=0; i<imageURLs.length; i++) {
+    var image = new Image();
+    image.onload = function() {
+      images.push(this);
+      if(images.length < imageURLs.length) {
+        return;
+      }
+      setInterval(draw, 30);
+      window.addEventListener('keydown', keyPressed, false);
+      canvas.addEventListener('click', mouseClicked, false);
+    }
+    image.src = imageURLs[i];
+  }
+}
+
+function mouseClicked(e) {
+  var pos = findPos(this);
+  var x = e.pageX - pos.x;
+  var y = e.pageY - pos.y;
+  
+  var mouse = new Particle(x, y, 1);
+  for(var i=0; i<particles.length; i++) {
+    if(particles[i].collides(mouse)) {
+      playerIndex = i;
+    }
+  }
 }
 
 function keyPressed(e) {
@@ -114,7 +144,6 @@ function keyPressed(e) {
     default:
       return true;
   }
-  
   e.preventDefault();
   
   return true;
@@ -122,7 +151,7 @@ function keyPressed(e) {
 
 function draw() {
   var ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgb(180,180,180)';
+  ctx.fillStyle = '#222';
   ctx.fillRect(0, 0, 800, 600);
   
   for(var i=0; i<particles.length; i++) {
@@ -130,18 +159,33 @@ function draw() {
     
     // collide with all other particless
     for(var j=i+1; j<particles.length; j++) {
-      particles[i].collide(particles[j]);
+      var p1 = particles[i];
+      var p2 = particles[j];
+      if(p1.collides(p2)) {
+        var dx = p2.x-p1.x;
+        var dy = p2.y-p1.y;
+        var dist = Math.sqrt((dx*dx) + (dy*dy));
+        var eatAmount = 0.5*p1.size/dist;
+        
+        if(p1.size > p2.size) {
+          p1.size = p1.size+eatAmount;
+          p2.size = dist-p1.size-eatAmount;
+        } else {
+          p2.size = p2.size+eatAmount;
+          p1.size = dist-p2.size-eatAmount;
+        }
+      }
     }
     
     // set style
     var isBiggerThanPlayer = particles[playerIndex].size-particles[i].size<0;
     if(isBiggerThanPlayer) {
-      particles[i].style = "red";
+      particles[i].style = 0;
     } else {
-      particles[i].style = "green";
+      particles[i].style = 1;
     }
     if(i == playerIndex) {
-      particles[i].style = "blue";
+      particles[i].style = 2;
     }
     particles[i].draw(ctx);
   }
