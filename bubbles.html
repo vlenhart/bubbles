@@ -105,6 +105,17 @@ var imageURLs = ["red.png", "green.png", "blue.png"];
 var images = new Array();
 
 function init() {
+  // compatiblity with webkit browsers
+  // from: http://stackoverflow.com/questions/1465374/javascript-event-keycode-constants
+  if(!window.KeyEvent) {
+    window.KeyEvent = {
+      DOM_VK_LEFT: 37,
+      DOM_VK_UP: 38,
+      DOM_VK_RIGHT: 39,
+      DOM_VK_DOWN: 40
+    };
+  }
+  
   canvas = document.getElementById('canvas');
   
   for(var i=0; i<100; i++) {
@@ -232,7 +243,7 @@ function draw() {
     }
     
     // set style
-    var isBiggerThanPlayer = particles[playerIndex].size-particles[i].size<0;
+    var isBiggerThanPlayer = (particles[playerIndex].size-particles[i].size)<0;
     if(isBiggerThanPlayer) {
       particles[i].style = 0;
     } else {
