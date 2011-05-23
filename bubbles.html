@@ -10,12 +10,12 @@ body {
 }
 h1 {
   font-size: 50px;
-  text-shadow: -1px -1px 0 #777;
+  text-shadow: -1px -1px 0 #666;
   margin: 15px 0;
 }
 a {
   color: #333;
-  text-shadow: -1px -1px 0 #555;
+  text-shadow: -1px -1px 0 #444;
   text-decoration: none;
 }
 a:hover {
@@ -83,9 +83,7 @@ function Particle(x, y, size, vx, vy, style) {
     var dy = other.y-this.y;
     var sqdist = (dx*dx) + (dy*dy);
     
-    if(sqdist < (r1+r2)*(r1+r2)) {
-      return true;
-    }
+    return (sqdist < (r1+r2)*(r1+r2));
   }
   this.draw = function(ctx) {
     if(this.size <= 0)
@@ -128,10 +126,38 @@ function init() {
       setInterval(draw, 30);
       window.addEventListener('keydown', keyPressed, false);
       canvas.addEventListener('click', mouseClicked, false);
+      
+      var elm = document.getElementById("toggle_accelerometer");
+      elm.addEventListener('click', toggle_accelerometer, false);
     }
     image.src = imageURLs[i];
   }
 }
+
+
+function toggle_accelerometer(e) {
+  if(e.target.innerHTML == "Enable") {
+    window.addEventListener('deviceorientation', updateOrient, false);
+    window.addEventListener("MozOrientation", updateOrient, false);
+    e.target.innerHTML = "Disable";
+  } else {
+    window.removeEventListener('deviceorientation', updateOrient, false);
+    window.removeEventListener("MozOrientation", updateOrient, false);
+    e.target.innerHTML = "Disable";
+  }
+  e.preventDefault();
+}
+
+function updateOrient(e) {
+  var player = particles[playerIndex];
+  if (e.gamma && e.beta) {
+    e.x = -e.gamma / (180 / Math.PI);
+    e.y = -e.beta / (180 / Math.PI);
+  }
+  player.vx = e.x*5;
+  player.vy = e.y*5;
+}
+
 
 function mouseClicked(e) {
   var pos = findPos(this);
@@ -149,8 +175,8 @@ function mouseClicked(e) {
 function keyPressed(e) {
   var player = particles[playerIndex];
   
-  var speedChange = 0.3;
-  var sizeCost = 0.3;
+  var speedChange = 0.2;
+  var sizeCost = 0.5;
   
   switch(e.keyCode) {
     case KeyEvent.DOM_VK_UP:
@@ -220,5 +246,6 @@ function draw() {
 }
 </script>
 </body>
+<p><a href="#" id="toggle_accelerometer">Enable</a> accelerator controls.</p>
 <p>Fork me on <a href="https://github.com/vlaube-de">GitHub</a>.</p>
 </html>
