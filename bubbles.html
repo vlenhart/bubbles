@@ -148,11 +148,11 @@ function init() {
 
 function toggle_accelerometer(e) {
   if(e.target.innerHTML == "Enable") {
-    window.addEventListener('deviceorientation', updateOrient, false);
+    window.addEventListener("deviceorientation", updateOrient, false);
     window.addEventListener("MozOrientation", updateOrient, false);
     e.target.innerHTML = "Disable";
   } else {
-    window.removeEventListener('deviceorientation', updateOrient, false);
+    window.removeEventListener("deviceorientation", updateOrient, false);
     window.removeEventListener("MozOrientation", updateOrient, false);
     e.target.innerHTML = "Enable";
   }
