@@ -161,12 +161,14 @@ function toggle_accelerometer(e) {
 
 function updateOrient(e) {
   var player = particles[playerIndex];
-  if (e.gamma && e.beta) {
+  if (typeof e.gamma != "undefined" && typeof e.beta != "undefined") {
     e.x = -e.gamma / (180 / Math.PI);
     e.y = -e.beta / (180 / Math.PI);
   }
-  player.vx = e.x*5;
-  player.vy = e.y*5;
+  if(!e.x)
+    console.log(e.gamma+" - "+e.beta);
+  player.vx = -e.x*5;
+  player.vy = -e.y*5;
 }
 
 
