@@ -102,6 +102,7 @@ function Particle(x, y, size, vx, vy, style) {
 var playerIndex = 0;
 var particles = new Array();
 var canvas;
+var ctx;
 var imageURLs = ["red.png", "green.png", "blue.png"];
 var images = new Array();
 
@@ -118,6 +119,7 @@ function init() {
   }
   
   canvas = document.getElementById('canvas');
+  ctx = canvas.getContext("2d");
   
   for(var i=0; i<100; i++) {
     var x = Math.random()*canvas.width;
@@ -218,7 +220,6 @@ function keyPressed(e) {
 }
 
 function draw() {
-  var ctx = canvas.getContext('2d');
   ctx.fillStyle = '#222';
   ctx.fillRect(0, 0, 800, 600);
   
