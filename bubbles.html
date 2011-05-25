@@ -118,7 +118,7 @@ function init() {
     };
   }
   
-  canvas = document.getElementById('canvas');
+  canvas = document.getElementById("canvas");
   ctx = canvas.getContext("2d");
   
   for(var i=0; i<100; i++) {
@@ -138,11 +138,11 @@ function init() {
         return;
       }
       setInterval(draw, 30);
-      window.addEventListener('keydown', keyPressed, false);
-      canvas.addEventListener('click', mouseClicked, false);
+      window.addEventListener("keydown", keyPressed, false);
+      canvas.addEventListener("click", mouseClicked, false);
       
       var elm = document.getElementById("toggle_accelerometer");
-      elm.addEventListener('click', toggle_accelerometer, false);
+      elm.addEventListener("click", toggle_accelerometer, false);
     }
     image.src = imageURLs[i];
   }
@@ -218,7 +218,7 @@ function keyPressed(e) {
 }
 
 function draw() {
-  ctx.fillStyle = '#222';
+  ctx.fillStyle = "#222";
   ctx.fillRect(0, 0, 800, 600);
   
   for(var i=0; i<particles.length; i++) {
