@@ -168,8 +168,6 @@ function updateOrient(e) {
     e.x = -e.gamma / (180 / Math.PI);
     e.y = -e.beta / (180 / Math.PI);
   }
-  if(!e.x)
-    console.log(e.gamma+" - "+e.beta);
   player.vx = -e.x*5;
   player.vy = -e.y*5;
 }
